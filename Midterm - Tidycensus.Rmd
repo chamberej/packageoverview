@@ -1,0 +1,303 @@
+---
+title: "Tidycensus"
+author: "Julie Gawrylowicz, Emma Chamberlayne, Blaise Sevier"
+date: "3/1/2020"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 5
+    toc_float: true
+    toc_collapsed: true
+    theme: paper
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+```
+
+## Tidycensus Overview
+
+### 2020 Census
+The goal of the US 2020 Census is to count every living person in the U.S. once, only once. The U.S. Census Bureau sends a short questionnaire to homes in all 50 states, D.C. and the five U.S. territories (Puerto Rico, American Samoa, the Commonwealth of the Northern Mariana Islands, Guam, and the U.S. Virgin Islands) every ten years. For the 2020 Census, each home will respond to this survey –  by mail, online, or by phone. Participating in the Census is required by law. The questions for the 2020 Census are included below. 
+
+> April 1st is National Census Day!
+
+In preparation for National Census Day, census invitations will be sent out in mid-March. Once the invitation arrives, you should respond by either by phone, online or by mail. In mid-April, Census takers will begin visiting college students who live on campus, people living in senior centers, and others who live among large groups of people. Census takers also begin conducting quality check interviews to help ensure an accurate count. By March 2021, the Census Bureau will send redistricting counts to states. This information is used to redraw legislative districts based on population changes.
+
+<center>
+
+![](census logo.jpg)
+
+\center
+
+### 2020 Census Questions {.tabset .tabset-fade .tabset-pills}
+
+<center>
+#### One
+How many people were living or staying in this house, apartment, or mobile home on April 1, 2020? 
+
+#### Two
+Were there any additional people staying here on April 1, 2020, that you did not include in Question 1?
+
+#### Three
+Is this house, apartment, or mobile home owned by you or someone in this household with a mortgage or loan?
+
+#### Four
+What is your telephone number?
+
+#### Five
+What is Person 1's name?
+
+#### Six
+What is Person 1's sex?
+
+#### Seven
+What is Person 1's age, and what is Person 1's date of birth?
+
+#### Eight
+Is Person 1 of Hispanic, Latino, or Spanish origin?
+
+#### Nine
+What is Person 1's race?
+
+#### Ten
+Print the name of Person 2.
+
+#### Eleven
+Does this person usually live or stay somewhere else? 
+
+#### Twelve
+How is this person related to Person 1?
+
+#### Example
+![2010 Census Questionnaire](example_questions.PNG){width=600px}
+
+\center
+
+### Goal of Census
+The goal of the census is the provide data that lawmakers, business owners, teachers, and many others use to allocate services for communities in the United States. 
+
+The data helps distribute billions of federal funding dollars to schools, fire departments, hospitals, roads and other community resources. Census data also determines the number of U.S. House of Representatives allocated to each state, affecting the electoral college. Finally, an accurate census count is used to draw congressional and state legislative districts. 
+
+The U.S. Census Bureau also seeks to gather more specific information about the local community with the American Community Survey. Some households will receive the 2020 Census and their annual ACS survey. Both surveys provide vital information for their community and nation. 
+
+### Data Collection, Access, Security of Data
+Under Title 13, the Census Bureau cannot release any identifiable information about individual households to law enforcement agencies, ensuring the data cannot be used against you. Census data can only be used for statistical purposes. An individual seeking an API key from the website can be granted one, but it is expected that they are the only ones to use that key for tracking of information purposes.  
+
+### Tidycensus
+#### Description
+Tidycensus is a package designed to allow R users to return various census data as tidy-verse ready data frames. Both Decennial Census and American Community Survey (ACS) data is available through tidycensus.
+
+#### Founder
+Tidycensus was created by Kyle Walker, Kris Eberwein, and Matt Herman. The most recent version of tidycensus was published on January 25, 2020 by Kyle Walker.
+
+<center>
+
+![Kyle Walker, PH.D is an Associate Professor of Geography and Director of the Center for Urban Studies at Texas Christian University.](kyle_walker.PNG){width=200px}
+
+\center
+
+#### Dependence
+Tidycensus imports several packages including httr, sf, dplyr (>= 0.7.0), tigris, stringr, jsonlite (>=1.5.0), purrr, rvest, tidyr (>= 0.7.0), rappdirs, readr, xml2, units, utils. Also, Tidycensus suggests the usage of ggplot2. It is designed to work well with the tidyverse package. 
+
+
+## Tidycensus Functionality
+Tidycensus has 13 main functions that aid in the access and manipulation of census data. The functions can be grouped by data access, information gathering, and data manipulation. Below is a general overview of each function followed by examples of their implementation. 
+
+### Functions {.tabset .tabset-fade .tabset-pills}
+#### Accessing the Census API
+<font size="3">**census_api_key (key, overwrite, install)**</font>
+<br>
+This function adds the census api key to the .Renviron file so it can be called securely without being stored within the code. An API key identifies an individual user so that the application administrator can restrict access and usage to the API. This allows the Census Bureau to ensure the Census data is being used properly. The function creates a .Renviron file if you don't have one, and appends the key to the existing file if you don't have one. The function secures access to the data because the function makes a backup of the original file for recovery purposes. 
+Arguments:
+
+  * key: from census formatted in quotes
+  * overwrite: if true, it will overwrite the existing key in the .Renviron file. 
+  * install: if true, installs the .Renviron file for later use. The default is false. 
+
+#### Information Gathering
+
+<font size="3">**county_laea**</font>
+<br>
+This function accesses a built-in data set for county geography with shift_geo parameter that shifts and rescales Alaska and Hawaii. The counties are shifted using Lambert Azimuthal Equal Area projections to more accurately represent the area in all regions of a sphere. Use this function to gain insights on geographic county information. 
+
+![Lambert Azimuthal Equal Area Projections](525px-Azimuthal_Equal-Area_with_Tissot's_Indicatrices_of_Distortion.svg.png){width=350px}
+
+<font size="3">**state_laea**</font>
+<br>
+Using the same algorithm as the county_laea function, the function returns a built in data set for state geometry with Alaska and Hawaii shifted and re-scaled.
+
+<font size="3">**fips_codes**</font>
+<br>
+This function accesses a build-in data set for state and county loop up. It returns a data frame containing 5 columns: county, county_code, state, state_code, and state_name. The FIPS code helps access regional data based on county and state geographies by combining state and county numerical codes.
+
+<font size="3">**load_variables (year, dataset, cache)**</font>
+<br>
+This function returns a tibble of variables of the decennial or ACS census data based on the specified year and data set. 
+
+#### Census Data
+
+<font size="3">**get_acs**</font>
+<br>
+This function obtains data and feature geometry for the ACS data. The arguments include: geography, variables, table, cache_table, year, endyear, output, state, county, geometry, keep_geo_vars, shift_geo, summary_var, key, moe_level, survey, and show_call. The function returns a tibble of the ACS data with the specified arguments as column headings. 
+
+<font size="3">**get_decennial**</font>
+<br>
+Similar to get_acs, this function gathers data from the decennial census and returns a tibble with the columns as specified. The arguments are: geography, variables, table, cache_table, year, sumfile, state, county, geometry, output, key_geo_vars, shift_geo, summary_var, key, and show_call. 
+
+<font size="3">**get_estimates**</font>
+<br>
+This function gets data from population estimates APIs based on its arguments. The arguments are: geography, product, variables, breakdown, breakdown_labels, year, state, county, time_series, output, geometry, keep_geo_vars, shift_geo, key, and show_call. 
+
+#### Statistics
+
+<font size="3">**moe_product (est1, est2, moe1, moe2)**</font>
+<br>
+The function calculates the margin of error for the product of two known estimates using the known margins of error for each estimate. 
+
+<font size="3">**moe_prop (num, denom, moe_num, moe_denom)**</font>
+<br>
+The function calculates the margin of error for the proportion of two known estimates using the known margins of error for each estimate. 
+
+<font size="3">**moe_ratio (num, denom, moe_num, moe_denom)**</font>
+<br>
+The function calculates the margin of error for the ratio of two known estimates using the known margins of error for each estimate. 
+
+<font size="3">**moe_sum (moe, estimate, na.rm)**</font>
+<br>
+The function calculates the margin of error for a derived sum, requiring a vector of margins of error and a vector of margins of error. It is recommended to inspect the data for zero estimates before using the function to avoid inflating the derived margin of error. 
+
+<font size="3">**significance (est1, est2, moe1, moe2, clevel)**</font>
+<br>
+This function evaluates whether the difference between two estimates are statistically significantly and returns a Boolean value. 
+
+### Examples of Usage
+To use the tidycensus package, there is a logical order that must be followed. First, a user must load the Census API key using the **census_api_key** function. Then, depending on the task, a user can use the **load_variables** function or the built in data sets (**fips_codes**, **county_laea**, **state_laea**) to look up information necessary to access the desired census data. Finally, the user can use the **get_acs**, **get_decennial**, or **get_estimates** functions to access the data sets. To further illustrate this, we will walk through two examples. First, lets load tidycensus and other useful packages.
+```{r message=FALSE}
+library(tidycensus)
+library(tidyverse)
+library(knitr)
+library(leaflet)
+library(stringr)
+library(sf)
+```
+
+
+#### How many people live in Virginia?
+Lets say that we wanted to figure out how many people live in Virginia based on the totals from the most recent Census. To do this, we will use tidycensus. First, we load the API key.
+```{r message = FALSE}
+census_api_key("f90d9d623d962133fe57d67849b76e13e4fa0498")
+```
+
+Suppose we do not know the Census variable name that corresponds to population. We can look that up using the **load_variables** function.
+```{r message = FALSE}
+v10 <- load_variables(2010, "sf1", cache = TRUE)
+```
+
+SF1 corresponds to Summary File 1, which contains the summarized data from the questions on the Decennial Census from every housing unit. Now we have a tibble that contains the variable names from the 2010 Decennial Census stored in variable v10. To determine which variables correspond to population, we can filter the columns.
+```{r}
+v10 <- v10 %>% 
+       filter(grepl("population", tolower(label), fixed = TRUE))
+kable(head(v10))
+```
+
+Looking at this smaller data set, we determine that variable H011001 which corresponds to Total population in occupied housing units best fits our question. Now, we can use the **get_decennial** function to load the data. We set the geography to state because we want information about the entire state and then we specify that we are interested in Virginia using the state argument. We use the variables argument to input the variable that we are interested in.
+```{r}
+va_pop <- get_decennial(geography = "state", state = "VA", 
+              variables = c(population = "H011001"))
+kable(va_pop)
+```
+
+From this, we see that there are approximately `r va_pop$value[1]` people in Virginia.
+
+We can visualize population using a map to better understand where people in Virginia are distributed. We will access the data again and change the geometry parameter to make it easier to graph. We based this section off of a tutorial created by Julia Silge from [this website](https://juliasilge.com/blog/using-tidycensus/).
+```{r echo = T, results='hide'} 
+va_value <- get_decennial(geography = "county", 
+                     variables = "H011001", 
+                     state = "VA",
+                     geometry = TRUE)
+
+pal <- colorNumeric(palette = "viridis", 
+                    domain = va_value$value)
+```
+
+```{r}
+va_value %>%
+  st_transform(crs = "+init=epsg:4326") %>%
+  leaflet(width = "100%") %>%
+  addProviderTiles(provider = "CartoDB.Positron") %>%
+  addPolygons(popup = ~ str_extract(NAME, "^([^,]*)"),
+              stroke = FALSE,
+              smoothFactor = 0,
+              fillOpacity = 0.7,
+              color = ~ pal(value)) %>%
+  addLegend("bottomright", 
+            pal = pal, 
+            values = ~ value,
+            title = "Population",
+            #labFormat = labelFormat(prefix = "$"),
+            opacity = 1)
+```
+
+#### What areas of Virginia have highest proportion of vacant housing units?
+Building off of the last example, suppose we want to determine which areas in have the highest proportion of vacant housing units. We can use a different set of functions in tidycensus to figure this out. Since we already loaded the Census API key in the last example, we do not have to repeat this step. Additionally, because the American Community Survey includes more granular information such as tenure, we will use this data set. To access the data, we will use the **get_acs** function. This time, we will change the output argument to "wide" so that all of the information for one county is in the same row. In this output, an E after the variable name means it is an estimate and an M after the variable name means it is the margin of error for that estimate.
+```{r}
+va_housing <- get_acs(geography = "county", state = "VA", 
+              variables = c(housing_units = "B25001_001",
+                            vacant = "B25002_003"),
+              output = "wide")
+kable(head(va_housing))
+```
+
+Using this data set, we can calculate the proportion of vacant housing units for each county in Virginia.
+```{r}
+va_housing$prop_vacantE = va_housing$vacantE / va_housing$housing_unitsE
+```
+
+Now that we have these estimates, we can determine the margin of error for this proportion. Since the American Community Survey calculates estimates, each value has an associated margin of error. Using the **moe_prop** function, we can figure out the associated margin of error for this calculated proportion.
+```{r}
+va_housing$prop_vacantM = moe_prop(va_housing$vacantE, 
+                                   va_housing$housing_unitsE, 
+                                   va_housing$vacantM, 
+                                   va_housing$vacantM)
+kable(head(va_housing))
+```
+
+From this, we can calculate that the average margin of error for the proportion of vacant housing units is `r mean(va_housing$prop_vacantM)`.
+
+## Similar Packages
+### Choroplethr
+Choroplethr is a package in R designed to make choropleth graphics for a variety of maps. Choropleths color a map based on a certain variable like population density, average age, etc. The package was made to visualize census data from the American Community Survey (ACS). While most of the functions are designed for US census data, this function also has a function for the Japanese census. In addition to data visualization, the package provides access to the census ACS data. 
+One distinct difference between choroplethr and tidycensus is their underlying purpose. Choroplethr is designed to create visualizations, specifically choropleths, based on census data. Tidycensus is made to manipulate and analyze the census data. Tidycensus also can get data from both the ACS and decennial sources, while choroplethr only accesses data from the ACS.
+
+![Choropleth Map Example using Choroplethr](choroplethr.png)
+
+### Census Python Library
+Census is a library in Python that is designed to provide access to the ACS and decennial Census data sets. The library requires that you obtain an Census API key. This function is similar to tidycensus which uses the census_api_key function. Both of these functions have the same purpose. To access the data sets, a user has to declare which set they would like to use. Users can access the Census Summary File 1, Census Summary File 3, or the ACS data. The ACS data has several forms: five year estimates, three year estimates, one year estimates, and data profiles. Once the data set has been declared (ex: c.acs5 if the user wanted to use their API key called c to access ACS 5 year estimate data), the user can use the get function to access the data. Within the get function, the user must first specify the census variables and the geography that they would like to access. If a user is unsure of the specific geography that they would like to access, they can look up the FIPS code using the us library. In tidycensus, users can specify a geography using state and county names or use the built in FIPS data set to look up the FIPS code. The data access process is similar between the two packages, but tidycensus uses different get functions in order to get data from each of the data sets instead of specifying outside the get function like the Census library does. The tidycensus package also supports accessing the margin of error on the ACS estimates, while the Census library does not. The syntax on the tidycensus package is also more user friendly as compared to the Census library. Additionally, the tidycensus package outputs the data set in a tidy data frame. The Census library outputs the data as a list of dictionaries, which is not as easy to use as a tidy data frame. Overall, the Census library is an effective tool to load Census data in Python, but the tidycensus package has a few advantages over the library that make it more desirable to use if possible.
+
+
+## Reflection
+
+Overall, tidycensus provides a way for a verified user to access census data through their API key. This access allows the user to interact with local, regional and national data from the census to conduct statistical research and gain geographic insights. Tidycensus can return a spatial representation from both the decennial US census or the American Community Survey. This data can then be used to gather information to make data driven decisions regarding the US population estimates. 
+
+Despite the benefits of access to census data, tidycensus comes with a major drawback. The tidycensus package is flawed in their default data storage techniques. The census data the package yields is not tidy if more than one variable is requested. Instead of adding columns of the requested variables, the package adds rows of information. This gives a data frame with several rows for each geographic region, a non-tidy storage format of the data. By switching the output argument to 'wide', a user can obtain a data frame that contains columns for every attribute and rows for each geographic region. This 'wide' format is easier to use for some types of analysis and manipulation.  
+
+## Project Sources
+To learn more about the Census or the tidycensus package, refer to the links below.
+
+[Git Hub Tidycensus Overview](https://walkerke.github.io/tidycensus/)
+
+[Tidycensus Visuals by Julia Silge](https://juliasilge.com/blog/using-tidycensus/)
+
+[The choroplethr package for R](https://www.trulia.com/blog/tech/the-choroplethr-package-for-r/)
+
+[U.S. Census Choroplethr Package](https://www.census.gov/data/academy/courses/choroplethr.html)
+
+[R Documentation Choroplethr Package](https://www.rdocumentation.org/packages/choroplethr/versions/3.6.3)
+
+[2020 Census Information](https://2020census.gov/en.html)
+
+[CranR Tidycensus Overview](https://cran.r-project.org/web/packages/tidycensus/tidycensus.pdf)
+
